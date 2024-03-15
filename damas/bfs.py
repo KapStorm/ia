@@ -34,12 +34,12 @@ def expand(nodo: Nodo) -> list[Nodo]:
 def bfs(f: list[Nodo]) -> Optional[Nodo]:
     if not f:
         return None
-    nodo = f.pop()
+    nodo = f.pop(0)
     if god_test(nodo):
         return nodo
     os = expand(nodo)
-    os.extend(f)
-    return bfs(os)
+    f.extend(os)
+    return bfs(f)
 
 def main() -> None:
     tamanio_tablero = 4
