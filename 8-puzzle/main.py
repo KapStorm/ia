@@ -1,87 +1,96 @@
 import sys
-import copy
+from typing import Optional
+
 
 class Nodo:
-    def __init__(self, estado, padre=None, nivel=0):
-        self.estado = estado  # Representación del estado actual
-        self.padre = padre    # Referencia al nodo padre
-        self.nivel = nivel    # Profundidad del nodo en el árbol de búsqueda
-        self.costo = 0        # Costo actual (profundidad del nodo) g(x)
-        self.heuristica = 0   # Heurística de distancia de Manhattan h(x)
-    
-    def __repr__(self):
-        return f"{self.estado} {self.nivel} {self.costo} {self.heuristica}"
+    def __init__(self, tablero: list[int], padre: Optional['Nodo'], level: int):
+        self.tablero = tablero
+        self.padre = padre
+        self.level = level
 
-def goalTest(estado_actual):
-    meta = [1,2,3,4,5,6,7,8,0]
-    count = 0
-    for fila in range(3):
-        for columna in range(3):
-            if estado_actual[fila][columna] != meta[fila * 3 + columna]:
-                count += 1
-    return count
+    def __repr__(self) -> str:
+        return f"Nodo({self.tablero}, {self.padre}, {self.level})"
 
-def distancia_manhattan(estado_actual):
-    meta = [1,2,3,4,5,6,7,8,0]
-    distancia = 0
-    for fila in range(3):
-        for columna in range(3):
-            valor = estado_actual[fila][columna]
-            if valor != 0:
-                fila_meta, col_meta = divmod(meta.index(valor), 3)
-                distancia += abs(fila_meta - fila) + abs(col_meta - columna)
-    return distancia
 
-def evaluate(sucesores):
-    for sucesor in sucesores:
-        sucesor.costo = sucesor.nivel  # Costo actual (profundidad del nodo)
-        sucesor.heuristica = distancia_manhattan(sucesor.estado)  # Heurística de distancia de Manhattan
+def calcular_distancia_manhattan(nodo: Nodo, numero: int) -> int:
+    current_index = nodo.tablero.index(numero)
+    if numero == 0:
+        target_index = 8
+    else:
+        target_index = numero - 1
+    pos_x_primero = current_index % 3
+    pos_y_primero = int(current_index / 3)
+    pos_x_segundo = target_index % 3
+    pos_y_segundo = int(target_index / 3)
+    return abs(pos_x_primero - pos_x_segundo) + abs(pos_y_primero - pos_y_segundo)
 
-def expand(nodo):
-    movimientos = [(0, 1), (0, -1), (1, 0), (-1, 0)]  # Movimientos posibles: derecha, izquierda, abajo, arriba
-    sucesores = []
-    # Encontrar la posición de la ficha vacía en el estado actual
-    fila_vacia = col_vacia = -1
-    for fila in range(3):
-        for col in range(3):
-            if nodo.estado[fila][col] == 0:
-                fila_vacia, col_vacia = fila, col
-                break
-    # Generar los sucesores válidos
-    for movimiento in movimientos:
-        fila_nueva, col_nueva = fila_vacia + movimiento[0], col_vacia + movimiento[1]
-        if 0 <= fila_nueva < 3 and 0 <= col_nueva < 3:      #verificar que no se salga del margen del tablero
-            nuevo_estado = [fila[:] for fila in nodo.estado]  #utilizar slicing para copiar superficialmente la lista completa
-            # intercambiar posiciones con la ficha vacía
-            nuevo_estado[fila_vacia][col_vacia], nuevo_estado[fila_nueva][col_nueva] = nuevo_estado[fila_nueva][col_nueva], nuevo_estado[fila_vacia][col_vacia]
-            sucesores.append(Nodo(nuevo_estado, nodo, nodo.nivel + 1)) # se crea un nodo nuevo para guardar el nuevo estado y lo agrega a la lista de sucesores
-    return sucesores
 
-def aEstrella(nodo_inicial):
-    F = [nodo_inicial]  # Creamos una lista F que contendrá el nodo inicial
-    while F:
-        nodo_actual = F.pop(0)
-        if goalTest(nodo_actual.estado) == 0:
-            print("Se encontró la solución:", nodo_actual.estado)
-            return nodo_actual
-        sucesores = expand(nodo_actual)
-        F.extend(sucesores)
-        evaluate(F)
-        F.sort(key=lambda x: x.costo + x.heuristica)  # Ordenar la lista de nodos por f(x)
-    print("Solución no encontrada")
+def goal_test(nodo: Nodo) -> bool:
+    return nodo.tablero == [1, 2, 3, 4, 5, 6, 7, 8, 0]
 
-# Ejemplo de estado inicial
-estado_inicial = [
-    [7, 4, 3],
-    [8, 1, 5],
-    [0, 2, 6]
-]
 
-# Creamos un nodo inicial
-nodo_inicial = Nodo(estado_inicial)
+def expand(nodo: Nodo) -> list[Nodo]:
+    def mover_espacio(index: int, nuevo_index: int) -> Nodo:
+        nuevo_tablero = Nodo(tablero=nodo.tablero.copy(), padre=nodo, level=nodo.level + 1)
+        nuevo_tablero.tablero[index] = nuevo_tablero.tablero[nuevo_index]
+        nuevo_tablero.tablero[nuevo_index] = 0
+        return nuevo_tablero
 
-# Ejecutamos el algoritmo A*
-res = aEstrella(nodo_inicial)
-while res.padre:
-    print(res.padre)
-    res = res.padre
+    os = []
+    longitud_tablero = len(nodo.tablero)
+    for index in range(longitud_tablero):
+        if nodo.tablero[index] == 0:
+            if index % 3 > 0:
+                os.append(mover_espacio(index, index - 1))
+            if index % 3 < 2:
+                os.append(mover_espacio(index, index + 1))
+            if index > 2:
+                os.append(mover_espacio(index, index - 3))
+            if index < 6:
+                os.append(mover_espacio(index, index + 3))
+            break
+    return os
+
+
+def evaluate(nodo: Nodo) -> int:
+    return sum([
+        calcular_distancia_manhattan(nodo, 1),
+        calcular_distancia_manhattan(nodo, 2),
+        calcular_distancia_manhattan(nodo, 3),
+        calcular_distancia_manhattan(nodo, 4),
+        calcular_distancia_manhattan(nodo, 5),
+        calcular_distancia_manhattan(nodo, 6),
+        calcular_distancia_manhattan(nodo, 7),
+        calcular_distancia_manhattan(nodo, 8)
+    ])
+
+
+def a_estrella(f: list[Nodo]) -> Optional[Nodo]:
+    if not f:
+        return None
+    f.sort(key=lambda x: x.level + evaluate(x))
+    nodo = f.pop(0)
+    if goal_test(nodo):
+        return nodo
+    os = expand(nodo)
+    f.extend(os)
+    return a_estrella(f)
+
+
+def imprimir_recorrido(nodo: Nodo) -> None:
+    cadena = ""
+    while nodo.padre:
+        cadena = f"{nodo.tablero}\n{cadena}"
+        nodo = nodo.padre
+    print(f"Solución encontrada:\n{nodo.tablero}\n{cadena}")
+
+
+if __name__ == '__main__':
+    sys.setrecursionlimit(1000000000)
+    tablero = [7, 4, 3, 8, 1, 5, 0, 2, 6]
+    nodo_inicial = Nodo(tablero, None, 0)
+    res = a_estrella([nodo_inicial])
+    if res:
+        imprimir_recorrido(res)
+    else:
+        print("Solución no encontrada")
