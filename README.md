@@ -1,10 +1,10 @@
-TODO
+# TODO
 
-- [ ] Reinas BFS
-- [ ] Reinas DFS
-- [ ] Reinas LFDS
+- [x] Reinas BFS
+- [x] Reinas DFS
+- [x] Reinas LFDS
 - [ ] Reinas Bidireccional
 - [ ] 8-Puzzle Bidireccional
-- [ ] A* 8-Puzzle
-- [ ] A* Bucarest (No necesita grafica)
-- [ ] Proyecto Carpinteria
+- [x] A* 8-Puzzle
+- [x] A* Bucarest (No necesita grafica)
+- [ ] Proyecto Carpinteria (GA)
