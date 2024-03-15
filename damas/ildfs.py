@@ -28,7 +28,7 @@ def expand(nodo: Nodo) -> list[Nodo]:
         if nodo.valor[index] < longitud_valor - 1:
             nuevo_valor = nodo.valor.copy()
             nuevo_valor[index] += 1
-            os.append(Nodo(valor=nuevo_valor, padre=nodo,level = nodo.level))
+            os.append(Nodo(valor=nuevo_valor, padre=nodo,level = nodo.level + 1))
     return os
 
 def ldfs(f:list[Nodo], limit: int) -> Optional[Nodo]:
@@ -55,7 +55,7 @@ def ildfs(f: list[Nodo], limite: int) -> Optional[Nodo]:
 def main() -> None:
     tamanio_tablero = 4
     init = [Nodo([0 for _ in range(tamanio_tablero)], None, 0)]
-    lfds_res = ildfs(init, 10)
+    lfds_res = ildfs(init, 5)
     print(f'LDFS {lfds_res}')
     
 if __name__ == '__main__':
