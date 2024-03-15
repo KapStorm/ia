@@ -54,7 +54,7 @@ def bfs(f: list[Nodo]) -> Optional[Nodo]:
 
 def lfds(f:list[Nodo], limit: int) -> Optional[Nodo]:
     if not f:
-        return None
+        return lfds(f=Nodo([0 for _ in range(4)], None, 0), limit=limit + 2)
     nodo = f.pop()
     nivel = nodo.level
     if god_test(nodo):
