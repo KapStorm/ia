@@ -28,18 +28,18 @@ def expand(nodo: Nodo) -> list[Nodo]:
         if nodo.valor[index] < longitud_valor - 1:
             nuevo_valor = nodo.valor.copy()
             nuevo_valor[index] += 1
-            os.append(Nodo(valor=nuevo_valor, padre=nodo,level = nodo.level))
+            os.append(Nodo(valor=nuevo_valor, padre=nodo,level = nodo.level + 1))
     return os
 
 def bfs(f: list[Nodo]) -> Optional[Nodo]:
     if not f:
         return None
-    nodo = f.pop()
+    nodo = f.pop(0)
     if god_test(nodo):
         return nodo
     os = expand(nodo)
-    os.extend(f)
-    return bfs(os)
+    f.extend(os)
+    return bfs(f)
 
 def main() -> None:
     tamanio_tablero = 4
