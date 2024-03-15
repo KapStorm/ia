@@ -1,119 +1,124 @@
 import copy
+import os
 import sys
+import csv
+from typing import Optional
 
 
-class Nodo:
-    def __init__(self, nombre: str, valor: int) -> None:
+dir_path = os.path.dirname(os.path.realpath(__file__))
+
+
+class Ciudad:
+    def __init__(self, nombre: str, valor: int, padre: Optional['Ciudad'] = None) -> None:
         self.nombre = nombre
         self.valor = valor
-        self.recorrido = []
+        self.padre = padre
 
-
-    def __repr__(self):
-        return f"{self.nombre} {self.valor} {self.recorrido}"
-    
 
 class Camino:
-    def __init__(self,ciudad1: str, ciudad2: str, valor: int) -> None:
+    def __init__(self, ciudad1: str, ciudad2: str, valor: int) -> None:
         self.ciudad1 = ciudad1
         self.ciudad2 = ciudad2
         self.valor = valor
 
 
-    def __repr__(self):
-        return f"{self.ciudad1} {self.ciudad2} {self.valor}"
-
-
-def leer_ciudades(ruta = 'ciudades.csv') -> list[Nodo]:
-    ciudades: list[Nodo] = []
+def leer_ciudades(ruta=f'{dir_path}/ciudades.csv') -> list[Ciudad]:
     with open(ruta, 'r') as file:
-        for line in file.readlines():
-            nombre, valor = line.split(',')
-            ciudades.append(Nodo(nombre=nombre, valor=int(valor)))
-    return ciudades
+        reader = csv.DictReader(file)
+        return [Ciudad(nombre=line['nombre'], valor=int(line['valor'])) for line in reader]
 
 
-def leer_caminos(ruta = 'caminos.csv') -> list[Camino]:
-    caminos: list[Camino] = []
-    with open(ruta,'r' ) as file:
-        for line in file.readlines():
-            ciudad1, ciudad2, valor = line.split(',')
-            caminos.append(Camino(ciudad1=ciudad1, ciudad2=ciudad2, valor=int(valor)))
-    return caminos
+def leer_caminos(ruta=f'{dir_path}/caminos.csv') -> list[Camino]:
+    with open(ruta, 'r') as file:
+        reader = csv.DictReader(file)
+        return [Camino(ciudad1=line['ciudad1'], ciudad2=line['ciudad2'], valor=int(line['valor'])) for line in reader]
 
 
-def A(F: list[Nodo]):
-    if not F:
-        return False
-    EA = F.pop(0)
-    if goalTest(EA):
-        recorrido_nombres = [nodo.nombre for nodo in EA.recorrido]
-        print(EA.nombre, EA.valor, recorrido_nombres)
-        return True
-    OS = expand(EA)
-    F.extend(OS)
-    OS = evaluate(OS)
-    return A(F)
+def a_estrella(f: list[Ciudad], ciudades: list[Ciudad], caminos: list[Camino]) -> Optional[Ciudad]:
+    if not f:
+        return None
+    ea = f.pop(0)
+    if goalTest(nodo=ea):
+        return ea
+    os = expand(nodo=ea, ciudades=ciudades, caminos=caminos)
+    f.extend(os)
+    os = evaluate(nodos=os, caminos=caminos)
+    return a_estrella(f, ciudades=ciudades, caminos=caminos)
 
 
-def expand(nodo: Nodo) -> list[Nodo]:
-    OS = []
-    ciudades = leer_ciudades()
-    caminos = leer_caminos()
+def expand(nodo: Ciudad, ciudades: list[Ciudad], caminos: list[Camino]) -> list[Ciudad]:
+    os = []
     for camino in caminos:
         if nodo.nombre == camino.ciudad1:
-            ciudad = encontrar_ciudad(camino.ciudad2, ciudades)
+            ciudad = encontrar_ciudad(
+                nombre_ciudad=camino.ciudad2, ciudades=ciudades)
         elif nodo.nombre == camino.ciudad2:
-            ciudad = encontrar_ciudad(camino.ciudad1, ciudades)
+            ciudad = encontrar_ciudad(
+                nombre_ciudad=camino.ciudad1, ciudades=ciudades)
         else:
             continue
         nodo_copy = copy.deepcopy(nodo)
-        ciudad.recorrido = [nodo_copy] + nodo_copy.recorrido
-        OS.append(ciudad)
-    return OS
+        ciudad.padre = nodo_copy
+        os.append(ciudad)
+    return os
 
 
-def encontrar_ciudad(nombre_ciudad: str, ciudades: list[Nodo]) -> Nodo:
-  for ciudad in ciudades:
-    if ciudad.nombre == nombre_ciudad:
-      return ciudad
+def encontrar_ciudad(nombre_ciudad: str, ciudades: list[Ciudad]) -> Ciudad:
+    for ciudad in ciudades:
+        if ciudad.nombre == nombre_ciudad:
+            return ciudad
 
 
-def obtener_gx(ciudad: Nodo, caminos: list[Camino]) -> int:
-    recorrido = copy.deepcopy(ciudad.recorrido)
+def obtener_gx(nodo: Ciudad, caminos: list[Camino]) -> int:
     contador = 0
-    while recorrido:
-        temp = recorrido.pop(0)        
+    while nodo.padre:
         for camino in caminos:
-            if ciudad.nombre == camino.ciudad1 and temp.nombre == camino.ciudad2\
-                    or ciudad.nombre == camino.ciudad2 and temp.nombre == camino.ciudad1:
+            if nodo.nombre == camino.ciudad1 and nodo.padre.nombre == camino.ciudad2\
+                    or nodo.nombre == camino.ciudad2 and nodo.padre.nombre == camino.ciudad1:
                 contador += camino.valor
-                ciudad = temp
+                nodo = nodo.padre
                 break
     return contador
-      
 
-def evaluate(nodos: list[Nodo]) -> list[Nodo]:
-    caminos = leer_caminos()
-    nodos_evaluados: list[tuple[Nodo, int]] = []
+
+def evaluate(nodos: list[Ciudad], caminos: list[Camino]) -> list[Ciudad]:
+    class Tupla:
+        def __init__(self, nodo: Ciudad, fx: int) -> None:
+            self.nodo = nodo
+            self.fx = fx
+
+    nodos_evaluados: list[Tupla] = []
     for nodo in nodos:
         hx = nodo.valor
-        gx = obtener_gx(nodo, caminos)
+        gx = obtener_gx(nodo=nodo, caminos=caminos)
         fx = gx + hx
-        nodos_evaluados.append((nodo, fx))
-    nodos_evaluados.sort(key=lambda nodo: nodo[1])
-    return [nodo[0] for nodo in nodos_evaluados]
+        nodos_evaluados.append(Tupla(nodo=nodo, fx=fx))
+    nodos_evaluados.sort(key=lambda nodo: nodo.fx)
+    return [nodo.nodo for nodo in nodos_evaluados]
 
-  
-def goalTest(EA: Nodo):
-    return EA.valor == 0
+
+def goalTest(nodo: Ciudad) -> bool:
+    return nodo.valor == 0
+
+
+def imprimir_recorrido(nodo: Ciudad) -> None:
+    cadena = f'{nodo.nombre}'
+    while nodo.padre:
+        nodo = nodo.padre
+        cadena = f'{nodo.nombre} -> {cadena}'
+    print(cadena)
 
 
 def main() -> None:
     ciudades = leer_ciudades()
+    caminos = leer_caminos()
     arad = encontrar_ciudad('Arad', ciudades)
-    F = [arad]
-    A(F)
+    f = [arad]
+    resultado = a_estrella(f, ciudades, caminos)
+    if resultado:
+        imprimir_recorrido(resultado)
+    else:
+        print('No se encontró solución')
 
 
 if __name__ == '__main__':
