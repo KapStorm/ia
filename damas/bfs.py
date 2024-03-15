@@ -31,17 +31,6 @@ def expand(nodo: Nodo) -> list[Nodo]:
             os.append(Nodo(valor=nuevo_valor, padre=nodo,level = nodo.level))
     return os
 
-def dfs(f: list[Nodo]) -> Optional[Nodo]:
-    if not f:
-        return None
-    nodo = f.pop()
-    if god_test(nodo):
-        return nodo
-    os = expand(nodo)
-    f.extend(os)
-    return dfs(f)
-
-
 def bfs(f: list[Nodo]) -> Optional[Nodo]:
     if not f:
         return None
@@ -50,25 +39,13 @@ def bfs(f: list[Nodo]) -> Optional[Nodo]:
         return nodo
     os = expand(nodo)
     os.extend(f)
-    return dfs(os)
-
-def lfds(f:list[Nodo], limit: int) -> Optional[Nodo]:
-    if not f:
-        return lfds(f=Nodo([0 for _ in range(4)], None, 0), limit=limit + 2)
-    nodo = f.pop()
-    nivel = nodo.level
-    if god_test(nodo):
-        return nodo
-    if nivel < limit:
-        os = expand(nodo)
-        f.extend(os)    
-    return lfds(f, limit) 
+    return bfs(os)
 
 def main() -> None:
     tamanio_tablero = 4
     init = [Nodo([0 for _ in range(tamanio_tablero)], None, 0)]
-    # TODO: en varios archivos
-
+    bfs_res = bfs(init)
+    print(f'BFS {bfs_res}')
 
 if __name__ == '__main__':
     sys.setrecursionlimit(1000000000)
