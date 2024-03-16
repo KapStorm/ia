@@ -1,16 +1,7 @@
 import sys
 from typing import Optional, Type
+from util import Nodo, obtener_valores_padres, dibujar_tablero
 
-ValorType = Type[list[int]]
-
-class Nodo:
-    def __init__(self, valor: ValorType, padre: Optional['Nodo'], level: int):
-        self.valor = valor
-        self.padre = padre
-        self.level = level
-
-    def __str__(self) -> str:
-        return f"Nodo({self.valor}, {self.padre}, {self.level})"
 
 def goalTest(tablero: Nodo) -> int:
     ataques = 0
@@ -49,12 +40,13 @@ def gs(f:list[Nodo]) -> Optional[Nodo]:
         
     return gs([mejor_hijo])
 
-
 def main() -> None:
     tamanio_tablero = 5
     init = [Nodo([0 for _ in range(tamanio_tablero)], None, 0)] 
     gs_res = gs(init)
-    print(f'GS {gs_res}')
+    gs_res_values = obtener_valores_padres(gs_res)
+    print(f'GS {gs_res_values}')
+    dibujar_tablero("GS",tamanio_tablero, gs_res_values)
     
 if __name__ == '__main__':
     sys.setrecursionlimit(1000000000)
