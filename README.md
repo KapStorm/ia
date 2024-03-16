@@ -1,11 +1,11 @@
 # TODO
 
-- [x] Reinas BFS (Falta grafica)
-- [x] Reinas DFS (Falta grafica)
-- [x] Reinas LFDS (Falta grafica)
-- [x] Reinas ILFDS (Falta grafica)
-- [x] Reinas Voraz(GFS) (Falta grafica)
+- [x] Reinas BFS
+- [x] Reinas DFS
+- [x] Reinas LFDS
+- [x] Reinas ILFDS
+- [x] Reinas Voraz(GFS)
 - [ ] 8-Puzzle Bidireccional
-- [x] A* 8-Puzzle 
+- [x] A* 8-Puzzle (Falta grafica)
 - [x] A* Bucarest (No necesita grafica)
 - [ ] Proyecto Carpinteria (GA)
