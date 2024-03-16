@@ -34,13 +34,14 @@ def expand(nodo: Nodo) -> list[Nodo]:
 def ldfs(f:list[Nodo], limit: int) -> Optional[Nodo]:
     if not f:
         return None
-    nodo = f.pop()
+    nodo = f.pop(0)
     nivel = nodo.level
     if god_test(nodo):
         return nodo
     if nivel < limit:
         os = expand(nodo)
-        f.extend(os)    
+        os.extend(f)
+        return ldfs(os, limit)      
     return ldfs(f, limit) 
 
 def ildfs(f: list[Nodo], limite: int) -> Optional[Nodo]:
