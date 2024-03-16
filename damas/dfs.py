@@ -1,16 +1,6 @@
 import sys
-from typing import Optional, Type
-
-ValorType = Type[list[int]]
-
-class Nodo:
-    def __init__(self, valor: ValorType, padre: Optional['Nodo'], level: int):
-        self.valor = valor
-        self.padre = padre
-        self.level = level
-
-    def __str__(self) -> str:
-        return f"Nodo({self.valor}, {self.padre}, {self.level})"
+from util import dibujar_tablero, Nodo, obtener_valores_padres
+from typing import Optional
 
 def god_test(tablero: Nodo) -> bool:
     ataques = 0
@@ -45,7 +35,9 @@ def main() -> None:
     tamanio_tablero = 4
     init = [Nodo([0 for _ in range(tamanio_tablero)], None, 0)]
     dfs_res = dfs(init)
-    print(f'DFS {dfs_res}')
+    dfs_res_values = obtener_valores_padres(dfs_res)
+    print(f'DFS {dfs_res_values}')
+    dibujar_tablero("DFS",tamanio_tablero, dfs_res_values)
     
 if __name__ == '__main__':
     sys.setrecursionlimit(1000000000)

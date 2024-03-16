@@ -1,16 +1,6 @@
 import sys
-from typing import Optional, Type
-
-ValorType = Type[list[int]]
-
-class Nodo:
-    def __init__(self, valor: ValorType, padre: Optional['Nodo'], level: int):
-        self.valor = valor
-        self.padre = padre
-        self.level = level
-
-    def __str__(self) -> str:
-        return f"Nodo({self.valor}, {self.padre}, {self.level})"
+from typing import Optional
+from util import dibujar_tablero, Nodo, obtener_valores_padres
 
 def god_test(tablero: Nodo) -> bool:
     ataques = 0
@@ -57,7 +47,9 @@ def main() -> None:
     tamanio_tablero = 4
     init = [Nodo([0 for _ in range(tamanio_tablero)], None, 0)]
     lfds_res = ildfs(init, 5)
-    print(f'LDFS {lfds_res}')
+    lfds_res_values = obtener_valores_padres(lfds_res)
+    print(f'ILDFS {lfds_res_values}')
+    dibujar_tablero("ILDFS",tamanio_tablero, lfds_res_values)
     
 if __name__ == '__main__':
     sys.setrecursionlimit(1000000000)
