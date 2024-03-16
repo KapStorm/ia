@@ -34,19 +34,20 @@ def expand(nodo: Nodo) -> list[Nodo]:
 def ldfs(f:list[Nodo], limit: int) -> Optional[Nodo]:
     if not f:
         return None
-    nodo = f.pop()
+    nodo = f.pop(0)
     nivel = nodo.level
     if god_test(nodo):
         return nodo
     if nivel < limit:
         os = expand(nodo)
-        f.extend(os)    
+        os.extend(f)
+        return ldfs(os, limit)   
     return ldfs(f, limit) 
 
 def main() -> None:
     tamanio_tablero = 4
     init = [Nodo([0 for _ in range(tamanio_tablero)], None, 0)]
-    lfds_res = ldfs(init, 5)
+    lfds_res = ldfs(init, 6)
     print(f'LDFS {lfds_res}')
     
 if __name__ == '__main__':
