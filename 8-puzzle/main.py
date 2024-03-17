@@ -1,16 +1,6 @@
 import sys
 from typing import Optional
-
-
-class Nodo:
-    def __init__(self, tablero: list[int], padre: Optional['Nodo'], level: int):
-        self.tablero = tablero
-        self.padre = padre
-        self.level = level
-
-    def __repr__(self) -> str:
-        return f"Nodo({self.tablero}, {self.padre}, {self.level})"
-
+from util import obtener_valores_padres, Nodo, animar_tablero 
 
 def calcular_distancia_manhattan(nodo: Nodo, numero: int) -> int:
     current_index = nodo.tablero.index(numero)
@@ -84,13 +74,16 @@ def imprimir_recorrido(nodo: Nodo) -> None:
         nodo = nodo.padre
     print(f"Solución encontrada:\n{nodo.tablero}\n{cadena}")
 
-
 if __name__ == '__main__':
     sys.setrecursionlimit(1000000000)
     tablero = [7, 4, 3, 8, 1, 5, 0, 2, 6]
     nodo_inicial = Nodo(tablero, None, 0)
-    res = a_estrella([nodo_inicial])
+    f = [nodo_inicial]
+    res = a_estrella(f)
+    res_values = obtener_valores_padres(res)
     if res:
-        imprimir_recorrido(res)
+        print("Solución encontrada!")
+        print("Pasos necesarios:", len(res_values) - 1)
+        animar_tablero(res_values)
     else:
         print("Solución no encontrada")
