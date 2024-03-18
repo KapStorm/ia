@@ -42,7 +42,7 @@ def a_estrella(f: list[Ciudad], ciudades: list[Ciudad], caminos: list[Camino]) -
         return ea
     os = expand(nodo=ea, ciudades=ciudades, caminos=caminos)
     f.extend(os)
-    os = evaluate(nodos=os, caminos=caminos)
+    f = evaluate(nodos=f, caminos=caminos)
     return a_estrella(f, ciudades=ciudades, caminos=caminos)
 
 
@@ -91,6 +91,8 @@ def evaluate(nodos: list[Ciudad], caminos: list[Camino]) -> list[Ciudad]:
     for nodo in nodos:
         hx = nodo.valor
         gx = obtener_gx(nodo=nodo, caminos=caminos)
+        if nodo.valor == 0:
+            return [nodo]
         fx = gx + hx
         nodos_evaluados.append(Tupla(nodo=nodo, fx=fx))
     nodos_evaluados.sort(key=lambda nodo: nodo.fx)
