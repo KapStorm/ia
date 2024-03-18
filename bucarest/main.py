@@ -66,7 +66,7 @@ def expand(nodo: Ciudad, ciudades: list[Ciudad], caminos: list[Camino]) -> list[
 def encontrar_ciudad(nombre_ciudad: str, ciudades: list[Ciudad]) -> Ciudad:
     for ciudad in ciudades:
         if ciudad.nombre == nombre_ciudad:
-            return ciudad
+            return copy.deepcopy(ciudad)
 
 
 def obtener_gx(nodo: Ciudad, caminos: list[Camino]) -> int:
@@ -91,8 +91,6 @@ def evaluate(nodos: list[Ciudad], caminos: list[Camino]) -> list[Ciudad]:
     for nodo in nodos:
         hx = nodo.valor
         gx = obtener_gx(nodo=nodo, caminos=caminos)
-        if nodo.valor == 0:
-            return [nodo]
         fx = gx + hx
         nodos_evaluados.append(Tupla(nodo=nodo, fx=fx))
     nodos_evaluados.sort(key=lambda nodo: nodo.fx)
