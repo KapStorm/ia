@@ -84,23 +84,28 @@ def mutate(individue: list[int], mutation_probability: float) -> list[int]:
 
 
 def main() -> None:
-    pobation_size = 10
-    generations = 100
-    poblation = [create_table() for _ in range(pobation_size)]
+    poblation_size = 30
+    generations = 50
+    poblation = [create_table() for _ in range(poblation_size)]
     for generation in range(generations):
-        print(f"Generation: {generation}")
-        print(poblation)
+        print(f"Generation: {generation + 1}")
+        print("5 Muestras")
+        print(f"{poblation[:5]}...")
         poblation.sort(key=fitness)
-        new_poblation = poblation[:2]
-        for p in poblation[2:]:
-            new_poblation.append(mutate(p, 0.2))
-        poblation = new_poblation
+        candidates = poblation[:2]
+        new_poblation = []
+        while len(new_poblation) < poblation_size:
+            individue = random.choice(candidates)
+            new_poblation.append(mutate(individue, 0.5))
         best = poblation[0]
         print(f'Best: {best}')
         print(f'Fitness: {fitness(best)}')
         print()
+        if not generation == generations - 1:
+            poblation = new_poblation
     print(fitness(poblation[0]))
 
 
 if __name__ == "__main__":
     main()
+    # print([1, 2, 3, 4, 5][2:])
