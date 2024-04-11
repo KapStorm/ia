@@ -34,6 +34,10 @@ def leer_caminos(ruta=f'{dir_path}/caminos.csv') -> list[Camino]:
         return [Camino(ciudad1=line['ciudad1'], ciudad2=line['ciudad2'], valor=int(line['valor'])) for line in reader]
 
 
+# de un nodo agarrar a sus hijos
+# ya que agarremos los hijos del nodo vamos a aplicar la funcion de evaluacion
+# para cada hijo
+# fx = gx + hx
 def a_estrella(f: list[Ciudad], ciudades: list[Ciudad], caminos: list[Camino]) -> Optional[Ciudad]:
     if not f:
         return None
@@ -124,3 +128,10 @@ def main() -> None:
 if __name__ == '__main__':
     sys.setrecursionlimit(1000000000)
     main()
+
+
+# [Arad 0]
+#         v <- es gx
+# [Zerind 75, Sibiu 140, Timisoara 118]
+# y hx es la distnacia en line arecta
+# Ordenamos por fx
