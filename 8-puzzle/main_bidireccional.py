@@ -3,87 +3,79 @@ from typing import Optional
 from util import obtener_valores_padres, Nodo, animar_tablero
 
 
-def calcular_distancia_manhattan(nodo: Nodo, numero: int) -> int:
-    index = nodo.tablero.index(numero)
-    index_target = nodo.target.index(numero)
-    return abs(index % 3 - index_target % 3) + abs(index // 3 - index_target // 3)
-
-
-def goal_test(nodo: Nodo) -> bool:
-    return nodo.tablero == nodo.target
-
-
-def expand(nodo: Nodo) -> list[Nodo]:
+def expand(nodo: Nodo, blacklist: list[Nodo]) -> list[Nodo]:
     def mover_espacio(index: int, nuevo_index: int) -> Nodo:
-        nuevo_tablero = Nodo(tablero=nodo.tablero.copy(), padre=nodo, level=nodo.level + 1, target=nodo.target, es_inverso=nodo.es_inverso)
+        nuevo_tablero = Nodo(tablero=nodo.tablero.copy(), padre=nodo, level=nodo.level + 1)
         nuevo_tablero.tablero[index] = nuevo_tablero.tablero[nuevo_index]
         nuevo_tablero.tablero[nuevo_index] = 0
-        return nuevo_tablero
+        if not nuevo_tablero.tablero in [x.tablero for x in blacklist]:
+            os.append(nuevo_tablero)
 
     os = []
     longitud_tablero = len(nodo.tablero)
     for index in range(longitud_tablero):
         if nodo.tablero[index] == 0:
             if index % 3 > 0:
-                os.append(mover_espacio(index, index - 1))
+                mover_espacio(index, index - 1)
             if index % 3 < 2:
-                os.append(mover_espacio(index, index + 1))
+                mover_espacio(index, index + 1)
             if index > 2:
-                os.append(mover_espacio(index, index - 3))
+                mover_espacio(index, index - 3)
             if index < 6:
-                os.append(mover_espacio(index, index + 3))
+                mover_espacio(index, index + 3)
             break
     return os
 
 
-def evaluate(nodo: Nodo) -> int:
-    return sum([
-        calcular_distancia_manhattan(nodo, 1),
-        calcular_distancia_manhattan(nodo, 2),
-        calcular_distancia_manhattan(nodo, 3),
-        calcular_distancia_manhattan(nodo, 4),
-        calcular_distancia_manhattan(nodo, 5),
-        calcular_distancia_manhattan(nodo, 6),
-        calcular_distancia_manhattan(nodo, 7),
-        calcular_distancia_manhattan(nodo, 8)
-    ])
+def goal_test(nodo: Nodo, blacklist_opuesto: list[Nodo]) -> Optional[tuple[Nodo, Nodo]]:
+    for blacklist_nodo in blacklist_opuesto:
+        if nodo.tablero == blacklist_nodo.tablero:
+            return nodo, blacklist_nodo
+    return None
 
 
-def a_estrella(f: list[Nodo]) -> Optional[Nodo]:
-    if not f:
+def bfs(f_inicio: list[Nodo], f_final: list[Nodo], blacklist_inicio: list[Nodo], blacklist_final: list[Nodo]) -> Optional[tuple[Nodo, Nodo]]:
+    if not f_inicio and not f_final:
         return None
-    f.sort(key=lambda x: x.level + evaluate(x))
-    nodo = f.pop(0)
-    if goal_test(nodo):
-        return nodo
-    os = expand(nodo)
-    f.extend(os)
-    return a_estrella(f)
+    if f_inicio:
+        nodo = f_inicio.pop(0)
+        goal_test_inicio = goal_test(nodo, blacklist_final)
+        if goal_test_inicio:
+            return goal_test_inicio
+        blacklist_inicio.append(nodo)
+        os = expand(nodo, blacklist_final)
+        f_inicio.extend(os)
+    if f_final:
+        nodo = f_final.pop(0)
+        goal_test_final = goal_test(nodo, blacklist_inicio)
+        if goal_test_final:
+            return goal_test_final
+        blacklist_final.append(nodo)
+        os = expand(nodo, blacklist_inicio)
+        f_final.extend(os)
+    return bfs(f_inicio, f_final, blacklist_inicio, blacklist_final)
 
 
-def imprimir_recorrido(nodo: Nodo) -> None:
-    cadena = ""
-    while nodo.padre:
-        if nodo.es_inverso:
-            cadena = f"{cadena}\n{nodo.tablero}"
-        else:
-            cadena = f"{nodo.tablero}\n{cadena}"
-        nodo = nodo.padre
-    print(f"Solución encontrada:\n{nodo.tablero}\n{cadena}")
+def recorrido_en_un_nodo(nodo_uno: Nodo, nodo_dos: Nodo) -> list[list[int]]:
+    valores_padres_uno = obtener_valores_padres(nodo_uno)
+    valores_padres_dos = obtener_valores_padres(nodo_dos)
+    if valores_padres_uno[0] == [1, 2, 3, 4, 5, 6, 7, 8, 0]:
+        valores_padres_uno.pop()
+        return valores_padres_dos + valores_padres_uno[::-1]
+    else:
+        valores_padres_dos.pop()
+        return valores_padres_uno + valores_padres_dos[::-1]
+
+
 
 if __name__ == '__main__':
     sys.setrecursionlimit(1000000000)
-    tablero = [7, 4, 3, 8, 1, 5, 0, 2, 6]
-    tablero_fin = [1, 2, 3, 4, 5, 6, 7, 8, 0]
-    f = [
-        Nodo(tablero=tablero_fin.copy(), padre=None, level=0, target=tablero.copy(), es_inverso=True),
-        Nodo(tablero=tablero.copy(), padre=None, level=0, target=tablero_fin.copy(), es_inverso=False)
-    ]
-    res = a_estrella(f)
-    res_values = obtener_valores_padres(res)
+    tablero_inicio = Nodo(tablero=[7, 4, 3, 8, 1, 5, 0, 2, 6], padre=None, level=0)
+    tablero_final = Nodo(tablero=[1, 2, 3, 4, 5, 6, 7, 8, 0], padre=None, level=0)
+    res = bfs(f_inicio=[tablero_inicio], f_final=[tablero_final], blacklist_inicio=[], blacklist_final=[])
     if res:
-        print("Solución encontrada!")
-        print("Pasos necesarios:", len(res_values) - 1)
-        animar_tablero(res_values)
+        a, b = res
+        recorrido = recorrido_en_un_nodo(a, b)
+        animar_tablero(recorrido)
     else:
         print("Solución no encontrada")

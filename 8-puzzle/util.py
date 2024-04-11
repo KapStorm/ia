@@ -4,12 +4,10 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 class Nodo:
-    def __init__(self, tablero: list[int], padre: Optional['Nodo'], level: int, target: list[int] = [], es_inverso: bool = False):
+    def __init__(self, tablero: list[int], padre: Optional['Nodo'], level: int):
         self.tablero = tablero
         self.padre = padre
         self.level = level
-        self.target = target
-        self.es_inverso = es_inverso
 
     def __repr__(self) -> str:
         return f"Nodo({self.tablero}, {self.padre}, {self.level})"
@@ -20,10 +18,7 @@ def obtener_valores_padres(nodo: Nodo) -> list[int]:
     while padre_actual:
         valores_padres.append(padre_actual.tablero)
         padre_actual = padre_actual.padre
-    if nodo.es_inverso:
-        return valores_padres
-    else:
-        return valores_padres[::-1]
+    return valores_padres[::-1]
 
 def dibujar_tablero(tablero_values: list[int]) -> None:
     tablero = np.array(tablero_values).reshape(3, 3)
